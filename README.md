@@ -69,6 +69,6 @@ if __name__ == "__main__":
 
 ## Installation
 
-```
-pip install dlengine
-```
+1. install package dependencies: pytorch and termcolor. 
+
+2. `pip install dlengine`
