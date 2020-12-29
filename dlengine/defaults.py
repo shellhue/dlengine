@@ -15,7 +15,6 @@ import torch
 from typing import Any
 from torch.nn.parallel import DistributedDataParallel
 
-from .utils import comm
 from .utils.checkpoint import Checkpointer
 from .utils.collect_env import collect_env_info
 from .utils.env import TORCH_VERSION, seed_all_rng
@@ -23,10 +22,9 @@ from .utils.events import CommonMetricPrinter, JSONWriter, TensorboardXWriter
 from .utils.file_io import PathManager
 from .utils.log import setup_logger
 from .utils.testing import print_csv_format
-from .evaluator import DatasetEvaluator, inference_on_dataset
+from .evaluator import inference_on_dataset
 from .train_loop import SimpleTrainer, TrainerBase
-from . import hooks
-
+from . import hooks, comm
 
 __all__ = ["default_setup", "DefaultTrainer"]
 

@@ -5,7 +5,7 @@ import time
 from contextlib import contextmanager
 import torch
 from collections import OrderedDict
-from .utils.comm import get_world_size, is_main_process
+from .comm import get_world_size, is_main_process
 from .utils.log import log_every_n_seconds
 
 

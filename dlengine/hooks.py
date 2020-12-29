@@ -9,7 +9,7 @@ import tempfile
 import time
 from collections import Counter
 import torch
-from .utils import comm
+from . import comm
 from .utils.checkpoint import PeriodicCheckpointer as _PeriodicCheckpointer
 from .utils.timer import Timer
 from .utils.precision_bn import get_bn_modules, update_bn_stats

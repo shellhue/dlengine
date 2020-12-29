@@ -1,4 +1,4 @@
-from .utils import comm
+from . import comm
 import torch
 from torch.utils.data.dataloader import DataLoader
 from .data_sampler import TrainingSampler, InferenceSampler

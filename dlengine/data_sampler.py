@@ -9,7 +9,7 @@ from typing import Optional
 import numpy as np
 from torch.utils.data import Sampler
 
-from .utils import comm
+from . import comm
 
 
 class TrainingSampler(Sampler):

@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torch.nn.parallel import DistributedDataParallel
 from typing import Dict
-from .utils import comm
+from . import comm
 from .utils.events import EventStorage, get_event_storage
 
 

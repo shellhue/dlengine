@@ -14,7 +14,7 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
-from .utils import comm
+from . import comm
 
 __all__ = ["launch"]
 
