@@ -1,5 +1,7 @@
 ### Introduction
-dlengine is a trainning engine targeting to separating miscellaneous trainning thing from modeling.
+dlengine is a trainning engine targeting to separating miscellaneous trainning things from modeling.
+
+
 With dlengine, you can focuse on building model. dlengine takes care of logging, model saving and restoring, very efficient multigpu training for you.
 
 
