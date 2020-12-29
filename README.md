@@ -11,7 +11,7 @@ dlengine contains features:
 
 ### Usage
 step 1. inheriting from `DefaultTrainer`，overwrite neccesary methods `build_model`, `build_optimizer`, `build_lr_scheduler`, `build_train_loader`, `build_test_loader`, `build_evaluator`.
-```
+```python
 from dlengine.defaults import DefaultTrainer
 
 class Trainer(DefaultTrainer):
@@ -45,7 +45,7 @@ class Trainer(DefaultTrainer):
 
 step 2. call `lanuch`function to start training
 
-```
+```python
 from dlengine.launch import launch
 from dlengine.defaults import default_setup
 def main(args):
