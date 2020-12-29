@@ -1,4 +1,4 @@
-### Introduction
+## Introduction
 dlengine is a trainning engine targeting to separating miscellaneous trainning things from modeling.
 
 
@@ -11,7 +11,7 @@ dlengine contains features:
 - automatic model saving and restoring
 
 
-### Usage
+## Usage
 step 1. inheriting from `DefaultTrainer`，overwrite neccesary methods `build_model`, `build_optimizer`, `build_lr_scheduler`, `build_train_loader`, `build_test_loader`, `build_evaluator`.
 ```python
 from dlengine.defaults import DefaultTrainer
