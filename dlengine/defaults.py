@@ -45,7 +45,8 @@ def default_setup(output_dir, project_name, args):
 
     rank = comm.get_rank()
     setup_logger(output_dir, distributed_rank=rank, name=project_name)
-    logger = setup_logger(output_dir, distributed_rank=rank)
+    setup_logger(output_dir, distributed_rank=rank, name="dlengine")
+    logger = logging.getLogger(__name__)
 
     logger.info("Rank of current process: {}. World size: {}".format(rank, comm.get_world_size()))
     logger.info("Environment info:\n" + collect_env_info())
