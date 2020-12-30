@@ -1,6 +1,6 @@
-from . import comm
 import torch
-from torch.utils.data.dataloader import DataLoader
+from torch.utils.data import Dataset, DataLoader
+from . import comm
 from .data_sampler import TrainingSampler, InferenceSampler
 from torch.nn.parallel import DistributedDataParallel
 import os
@@ -8,21 +8,37 @@ from distutils.dir_util import copy_tree
 
 
 class DistBridger(object):
+
     @classmethod
-    def to_dist_dataloader(cls, dataloader: DataLoader, is_train=True, infinite=False):
-        if comm.get_world_size() == 1:
-            return dataloader
-        batch_size = dataloader.batch_size
+    def dist_training_dataloader(cls,
+                                 dataset: Dataset,
+                                 batch_size: int,
+                                 shuffle: bool = False,
+                                 num_workers: int = 8,
+                                 infinite: bool = False,
+                                 seed: int = None,
+                                 collate_fn=None,
+                                 ):
         assert batch_size % comm.get_world_size() == 0, "batch size should be integer multiple of world size"
-        batch_size = batch_size // comm.get_world_size()
-        num_workers = dataloader.num_workers
-        dataset = dataloader.dataset
-        collate_fn = dataloader.collate_fn
-        if is_train:
-            sampler = TrainingSampler(len(dataset), shuffle=True, seed=583, infinite=infinite)
-        else:
-            sampler = InferenceSampler(len(dataset), split=False)
-        batch_sampler = torch.utils.data.BatchSampler(sampler, batch_size, True)
+        imgs_per_gpu = batch_size // comm.get_world_size()
+        sampler = TrainingSampler(len(dataset), shuffle=shuffle, seed=seed, infinite=infinite)
+        batch_sampler = torch.utils.data.BatchSampler(sampler, imgs_per_gpu, True)
+        return DataLoader(dataset,
+                          batch_sampler=batch_sampler,
+                          num_workers=num_workers,
+                          pin_memory=True,
+                          collate_fn=collate_fn)
+
+    @classmethod
+    def dist_inference_dataloader(cls,
+                                  dataset: Dataset,
+                                  batch_size: int,
+                                  num_workers: int = 8,
+                                  collate_fn=None):
+        assert batch_size % comm.get_world_size() == 0, "batch size should be integer multiple of world size"
+        imgs_per_gpu = batch_size // comm.get_world_size()
+        sampler = InferenceSampler(len(dataset), split=True)
+        batch_sampler = torch.utils.data.BatchSampler(sampler, imgs_per_gpu, False)
         return DataLoader(dataset,
                           batch_sampler=batch_sampler,
                           num_workers=num_workers,

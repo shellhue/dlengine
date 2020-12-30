@@ -23,7 +23,14 @@ class TrainingSampler(Sampler):
     or `range(size) + range(size) + ...` (if shuffle is False)
     """
 
-    def __init__(self, size: int, shuffle: bool = True, seed: Optional[int] = None, infinite: bool = False):
+    def __init__(
+        self,
+        size: int,
+        shuffle: bool = True,
+        seed: Optional[int] = None,
+        infinite: bool = False,
+        drop_last: bool = True,
+    ):
         """
         Args:
             size (int): the total number of data of the underlying dataset to sample from
@@ -31,6 +38,8 @@ class TrainingSampler(Sampler):
             seed (int): the initial seed of the shuffle. Must be the same
                 across all workers. If None, will use a random seed shared
                 among workers (require synchronization among all workers).
+            infinite (bool): whether to generate infinite indices or not.
+            drop_last (bool): whether to drop last or not when size is not interger multiple of world size.
         """
         self._size = size
         assert size > 0
@@ -42,29 +51,39 @@ class TrainingSampler(Sampler):
 
         self._rank = comm.get_rank()
         self._world_size = comm.get_world_size()
+        self._epoch = 0
+        self._drop_last = drop_last
 
     def __len__(self):
-        if self._infinite:
-            return -1
-        return self._size
+        assert not self._infinite, "when in infinite mode, __len__ should not be called"
+        base = self._size // self._world_size
+        if self._size % self._world_size > self._rank:
+            base += 1
+
+        return base
 
     def __iter__(self):
         start = self._rank
-        yield from itertools.islice(self._infinite_indices(), start, None, self._world_size)
+        yield from itertools.islice(self._indices(), start, None, self._world_size)
 
-    def _infinite_indices(self):
-        np.random.seed(self._seed)
+    def _indices(self):
+        keep = self._size
+        if self._drop_last:
+            keep = self._size // self._world_size * self._world_size
         if self._infinite:
+            np.random.seed(self._seed)
             while True:
                 if self._shuffle:
-                    yield from np.random.permutation(self._size)
+                    yield from np.random.permutation(self._size)[:keep]
                 else:
-                    yield from np.arange(self._size)
+                    yield from np.arange(self._size)[:keep]
         else:
+            np.random.seed(self._seed + self._epoch)
             if self._shuffle:
-                yield from np.random.permutation(self._size)
+                yield from np.random.permutation(self._size)[:keep]
             else:
-                yield from np.arange(self._size)
+                yield from np.arange(self._size)[:keep]
+        self._epoch += 1
 
 
 class InferenceSampler(Sampler):
