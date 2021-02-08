@@ -57,7 +57,7 @@ class TrainingSampler(Sampler):
     def __len__(self):
         assert not self._infinite, "when in infinite mode, __len__ should not be called"
         base = self._size // self._world_size
-        if self._size % self._world_size > self._rank:
+        if self._size % self._world_size > self._rank and not self._drop_last:
             base += 1
 
         return base

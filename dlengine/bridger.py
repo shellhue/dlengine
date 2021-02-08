@@ -64,3 +64,6 @@ class DistBridger(object):
         if comm.is_main_process():
             print(*args, **kwargs)
 
+    @classmethod
+    def is_distributed(cls):
+        return comm.get_world_size() > 1
