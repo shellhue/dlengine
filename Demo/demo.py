@@ -14,6 +14,7 @@ from dlengine.bridger import DistBridger
 
 from .model import Classifier
 from .evaluator import ClassificationEvaluator
+from .dataset import BaseClassificationDataset
 
 
 class Trainer(DefaultTrainer):
@@ -44,11 +45,7 @@ class Trainer(DefaultTrainer):
 
     @classmethod
     def build_train_loader(cls, cfg):
-        dataset = build_dataset(cfg.task_type,
-                                phase="train",
-                                transforms=build_transforms("train", cfg.input_size),
-                                root_dir=cfg.data_dir,
-                                classes=cfg.classes)
+        dataset = BaseClassificationDataset()
         imgs_per_gpu = cfg.batch_size // cfg.num_gpu
         batches_per_epoch = len(dataset) // cfg.batch_size
         sampler = TrainingSampler(len(dataset), shuffle=True, seed=583, infinite=True)
@@ -64,11 +61,7 @@ class Trainer(DefaultTrainer):
 
     @classmethod
     def build_test_loader(cls, cfg):
-        dataset = build_dataset(cfg.task_type,
-                                phase=cfg.eval_phase,
-                                transforms=build_transforms("val", cfg.input_size),
-                                root_dir=cfg.data_dir,
-                                classes=cfg.classes)
+        dataset = BaseClassificationDataset()
         imgs_per_gpu = cfg.batch_size // cfg.num_gpu
         sampler = InferenceSampler(len(dataset), split=True)
         batch_sampler = torch.utils.data.BatchSampler(sampler, imgs_per_gpu, False)

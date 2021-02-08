@@ -27,44 +27,12 @@ def initialize_model(model_name, num_classes, feature_extract=False, use_pretrai
     model_ft = None
     input_size = 224
 
-    if model_name == "resnet18":
-        model_ft = models.resnet18(pretrained=use_pretrained, progress=True)
-        set_parameter_requires_grad(model_ft, feature_extract)
-        num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, num_classes)
-        input_size = 224
-    elif model_name == "resnet50":
+    if model_name == "resnet50":
         model_ft = models.resnet50(pretrained=use_pretrained, progress=True)
         set_parameter_requires_grad(model_ft, feature_extract)
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Linear(num_ftrs, num_classes)
         input_size = 224
-    elif model_name == "resnest50":
-        model_ft = torch.hub.load('zhanghang1989/ResNeSt', 'resnest50', pretrained=True)
-        set_parameter_requires_grad(model_ft, feature_extract)
-        num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, num_classes)
-        input_size = 224
-    elif model_name == "mobilenetv2":
-        model_ft = models.mobilenet_v2(pretrained=use_pretrained, progress=True)
-        set_parameter_requires_grad(model_ft, feature_extract)
-        num_ftrs = model_ft.classifier[1].in_features
-        model_ft.classifier = nn.Linear(num_ftrs, num_classes)
-        input_size = 224
-    elif model_name == "vit":
-        v = ViT(
-            image_size=input_size,
-            patch_size=32,
-            num_classes=num_classes,
-            dim=int(1024 * 1.0),
-            depth=6,
-            heads=16,
-            mlp_dim=int(2048 * 1),
-            dropout=0.1,
-            emb_dropout=0.1
-        )
-        v = v.to(device)
-        return v, input_size
     else:
         print("Invalid model name, exiting...")
         exit()
