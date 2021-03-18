@@ -119,7 +119,7 @@ def inference_on_dataset(model, data_loader, evaluator):
     """
     num_devices = get_world_size()
     logger = logging.getLogger(__name__)
-    logger.info("Start inference on {} images".format(len(data_loader)))
+    logger.info("Start inference on {} image batches".format(len(data_loader)))
 
     total = len(data_loader)  # inference data loader must have a fixed length
     if evaluator is None:
