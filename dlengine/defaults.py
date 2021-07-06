@@ -105,12 +105,26 @@ class DefaultTrainer(TrainerBase):
         cfg (CfgNode):
     """
 
-    def __init__(self, cfg, output_dir, project_name, num_epoch, save_model_every_n_epoch):
+    def __init__(self,
+                 cfg: Any,
+                 output_dir: str,
+                 project_name: str,
+                 num_epoch: int,
+                 save_model_every_n_epoch: int = 1,
+                 log_every_n_iter: int = 20,
+                 test_every_n_iter: int = 1):
         """
         Args:
-            cfg: the cfg object each project use to build everything, \
+            cfg (Any): the cfg object each project use to build everything, \
                  default trainer does not use cfg in internal, so each project \
                  can pass everything you like
+            output_dir (str): the output directory for saving
+            project_name (str): the name of the main project using this training engine
+            num_epoch (int): the total training epoch
+            save_model_every_n_epoch (int): the model saving frequency.
+            log_every_n_iter (int): the loging frequency.
+            test_every_n_iter (int): the testing frequency.
+
         """
         super().__init__()
         logger = logging.getLogger(__name__)
@@ -121,6 +135,8 @@ class DefaultTrainer(TrainerBase):
         self.project_name = project_name
         self.num_epoch = num_epoch
         self.save_model_every_n_epoch = save_model_every_n_epoch
+        self.log_every_n_iter = log_every_n_iter
+        self.test_every_n_iter = test_every_n_iter
         self.start_epoch = 0
         self.end_epoch = num_epoch
         self.cfg = cfg
@@ -198,7 +214,8 @@ class DefaultTrainer(TrainerBase):
         # This is not always the best: if checkpointing has a different frequency,
         # some checkpoints may have more precise statistics than others.
         if comm.is_main_process():
-            ret.append(hooks.PeriodicCheckpointer(self.checkpointer, self.save_model_every_n_epoch * self.iters_per_epoch))
+            ret.append(
+                hooks.PeriodicCheckpointer(self.checkpointer, self.save_model_every_n_epoch * self.iters_per_epoch))
 
         def test_and_save_results():
             self._last_eval_results = self.test(self.cfg, self.model)
@@ -206,11 +223,11 @@ class DefaultTrainer(TrainerBase):
 
         # Do evaluation after checkpointer, because then if it fails,
         # we can use the saved checkpoint to debug.
-        ret.append(hooks.EvalHook(1 * self.iters_per_epoch, test_and_save_results))
+        ret.append(hooks.EvalHook(self.test_every_n_iter * self.iters_per_epoch, test_and_save_results))
 
         if comm.is_main_process():
             # run writers in the end, so that evaluation metrics are written
-            ret.append(hooks.PeriodicWriter(self.build_writers(), period=20))
+            ret.append(hooks.PeriodicWriter(self.build_writers(), period=self.log_every_n_iter))
         return ret
 
     def build_writers(self):
@@ -287,7 +304,8 @@ class DefaultTrainer(TrainerBase):
         raise NotImplementedError
 
     @classmethod
-    def build_lr_scheduler(cls, cfg: Any, end_iter: int, optimizer: torch.optim.Optimizer) -> torch.optim.lr_scheduler._LRScheduler:
+    def build_lr_scheduler(cls, cfg: Any, end_iter: int,
+                           optimizer: torch.optim.Optimizer) -> torch.optim.lr_scheduler._LRScheduler:
         """
         Args:
             cfg (Any): the config object passed in when trainer initialized. It can be a CfgNode, a argparse.NameSpace, a dict, or anything else you like.
@@ -376,6 +394,7 @@ class DefaultTrainer(TrainerBase):
             print_csv_format(results)
 
         return results
+
 
 # Access basic attributes from the underlying trainer
 for _attr in ["model", "data_loader", "optimizer"]:
